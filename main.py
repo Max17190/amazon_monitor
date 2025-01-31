@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv(dotenv_path='/Users/maxloffgren/Documents/Amazon Monitor/API.env')
+
+# Private API endpoint
 url = str(os.getenv('URL'))
 
 headers = {
@@ -29,7 +31,7 @@ async def fetch_stock(session, asin):
                     offer.get('seller', '') == 'Amazon.com'
                     for offer in offers
                     )
-                    
+
                     if in_stock and amazon_featured:
                         print(f"Asin {asin} is in stock: {link}")
                         return link
