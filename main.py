@@ -50,18 +50,14 @@ class Application:
 if __name__ == "__main__":
     app = Application()
 
-    # Register signal handlers for graceful shutdown
     signal.signal(signal.SIGINT, app.handle_shutdown)
     signal.signal(signal.SIGTERM, app.handle_shutdown)
 
     try:
-        # Start the monitor task
         app.loop.create_task(app.run_monitor())
-        # Run the Discord bot
         app.loop.run_until_complete(app.discord_bot.client.start(app.discord_bot.token))
     except Exception as e:
         print(f"Error: {e}")
     finally:
-        # Cleanup
         if not app.loop.is_closed():
             app.loop.close()
