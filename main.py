@@ -1,8 +1,11 @@
 import aiohttp
 import asyncio
 from track_items import asins
+from dotenv import load_dotenv
+import os
 
-url = 'https://api.enven.io/v1/products'
+load_dotenv(dotenv_path='/Users/maxloffgren/Documents/Amazon Monitor/API.env')
+url = str(os.getenv('URL'))
 
 headers = {
     'Content-Type': 'application/json',
@@ -20,12 +23,23 @@ async def fetch_stock(session, asin):
                     r_json = await response.json()
                     in_stock = r_json['product']['inStock']
                     link = r_json['product']['link']
+                    offers = r_json.get('offers', [])
 
-                    if in_stock:
+                    amazon_featured = any(
+                    offer.get('seller', '') == 'Amazon.com'
+                    for offer in offers
+                    )
+                    
+                    if in_stock and amazon_featured:
                         print(f"Asin {asin} is in stock: {link}")
                         return link
                     else:
-                        print(f'Failed to fetch data for ASIN {asin}. Status: {response.status}')
+                        print(f'Asin {asin} not in stock.')
+                elif response.status == 429:
+                     await asyncio.sleep(1)
+                     return await fetch_stock(session, asin)
+                else:
+                    print(f'Error occured for asin {asin}. Error Status: {response.status}')
         
         except Exception as e:
              print(f"An error occured for ASIN {asin}: {e}")
