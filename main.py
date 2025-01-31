@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 import os
 import discord
 
-load_dotenv(dotenv_path='/etc/secrets/API.env')
-# load_dotenv(dotenv_path='/Users/maxloffgren/Documents/Amazon Monitor/API.env')
+# load_dotenv(dotenv_path='/etc/secrets/API.env')
+load_dotenv(dotenv_path='/Users/maxloffgren/Documents/Amazon Monitor/API.env')
 
 # Private API endpoint
 url = str(os.getenv('URL'))
