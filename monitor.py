@@ -14,12 +14,21 @@ class StockMonitor:
         
         try:
             async with session.post(self.url, json=data, headers=self.headers) as response:
+                print(f"Response status for ASIN {asin}: {response.status}")
                 if response.status == 200:
                     r_json = await response.json()
-                    return r_json['product'] if self._is_valid_stock(r_json) else None
+                    product = r_json.get('product', {})
+                    if self._is_valid_stock(r_json):
+                        print(f"ASIN {asin}: In Stock")
+                    else:
+                        print(f"ASIN {asin}: Out of Stock")
+                    return product if self._is_valid_stock(r_json) else None
+                
                 elif response.status == 429:
+                    print(f"Rate limited for ASIN {asin}. Retrying after 1 second...")
                     await asyncio.sleep(1)
                     return await self.fetch_stock(session, asin)
+                
         except Exception as e:
             print(f"Error monitoring ASIN {asin}: {e}")
             return None
@@ -28,6 +37,10 @@ class StockMonitor:
         product = r_json.get('product', {})
         offers = product.get('offers', [])
         return (
-            product.get('inStock') and 
-            any(offer.get('merchantName') == 'Amazon.com' for offer in offers)
+            product.get('inStock', False) and
+            any(
+                (offer.get('merchantName') in ('Amazon.com', '') or not offer.get('merchantName')) and
+                float(offer.get('priceInfo', {}).get('price', '0')) > 0
+                for offer in offers
+            )
         )
