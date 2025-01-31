@@ -15,6 +15,8 @@ class StockMonitor:
         try:
             async with session.post(self.url, json=data, headers=self.headers) as response:
                 print(f"Response status for ASIN {asin}: {response.status}")
+
+                # Out of stock handler
                 if response.status == 200:
                     r_json = await response.json()
                     product = r_json.get('product', {})
@@ -24,6 +26,7 @@ class StockMonitor:
                         print(f"ASIN {asin}: Out of Stock")
                     return product if self._is_valid_stock(r_json) else None
                 
+                # Rate limit handler
                 elif response.status == 429:
                     print(f"Rate limited for ASIN {asin}. Retrying after 1 second...")
                     await asyncio.sleep(1)
@@ -33,6 +36,7 @@ class StockMonitor:
             print(f"Error monitoring ASIN {asin}: {e}")
             return None
 
+    # Check in stock and seller
     def _is_valid_stock(self, r_json):
         product = r_json.get('product', {})
         offers = product.get('offers', [])
