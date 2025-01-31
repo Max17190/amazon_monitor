@@ -2,6 +2,7 @@ import discord
 from discord import Embed
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 
 load_dotenv(dotenv_path='/Users/maxloffgren/Documents/Amazon Monitor/API.env')
 
@@ -26,21 +27,28 @@ class BlinkMonitor:
         embed = Embed(title='Blink Monitor', color=discord.Color.purple())
         price = product_data['offers'][0]['priceInfo']['price'] if product_data['offers'] else 'N/A'
 
+        if 'image' in product_data:
+            embed.set_thumbnail(url=product_data['image'])
+
+        product_name = product_data['title']
+        product_link = product_data['link']
+
+        product_name_with_link = f"[{product_name}]({product_link})"
+
         embed.add_field(
-            name=product_data['title'],
-            value=f"""
-            **SKU:** {product_data['asin']}
-
-            **Price:** {price}
-
-            **Condition:** New
-
-            **Sold By:** Amazon.com
-
-            [VIEW PRODUCT]({product_data['link']})
-            """,
+            name="\u200b",
+            value=f"""**{product_name_with_link}**\n
+            **SKU:** {product_data['asin']}\n
+            **Price:** {price}\n
+            **Condition:** New\n
+            **Sold By:** Amazon.com""",
             inline=False
         )
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        embed.set_footer(text=f"Blink FNF | {timestamp}")
+
+        await self.channel.send(embed=embed)
 
 
         await self.channel.send(embed=embed)
